@@ -1,3 +1,6 @@
+"""
+使用条件随机场对中文进行分词
+"""
 from crf_graphmodel import *
 import numpy as np
 import math
