@@ -1,6 +1,9 @@
 '''
 这是一个应用在动态规划领域的维特比算法及一个例子。具体网址可见：
 https://zh.wikipedia.org/wiki/%E7%BB%B4%E7%89%B9%E6%AF%94%E7%AE%97%E6%B3%95
+本代码对原网址的代码进行了适当修改，主要目的是为了更好的显示运算逻辑及结果，其原理与原作完全一致
+test函数提供您多次输入observation给出status的示例
+修改者：叶强 qqiangye@gmail.com
 '''
 
 # 状态的样本空间
