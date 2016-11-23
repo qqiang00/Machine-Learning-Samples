@@ -65,17 +65,17 @@ def display_result(observations,result_m):
 
 def viterbi(obs, states, start_p, trans_p, emit_p):
 
-  result_m = [] # 存放结果
+  result_m = [] # 存放结果,其内每一个元素是一个字典
   pre_p = {}    # 存放前一次状态的概率
   for s in states:  # 对于每一个状态
     pre_p[s] = start_p[s]*emit_p[s][obs[0]] # 把第一个观测节点对应的各状态值计算出来
   result_m.append(pre_p)
 
-  for ob in obs[1:]:
+  for ob in obs[1:]:  # 从第2个观测节点开始
     cur_p = {}  # 存放在当前观测下得到的各状态的概率
     max_p,state_max_p = max(zip(pre_p.values(),pre_p.keys())) #查找前一次计算结果中最大概率及其状态
     for s in states: # 对于每一个状态,计算由前一时刻最大p及对应状态转移至各状态，并由各状态表现为观测结果的概率
-      cur_p[s] = max_p * trans_p[state_max_p][s] * emit_p[s][ob]
+      cur_p[s] = max_p * trans_p[state_max_p][s] * emit_p[s][ob] 
     result_m.append(cur_p)  # 将当前的各状态P值存入结果列表
     pre_p = cur_p # 将当前状态赋值给先前状态，准备下次计算
 
