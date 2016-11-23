@@ -1,3 +1,7 @@
+"""
+本段代码使用了多种方法，来运算描述异或问题，可作为初学NN时对神经元工作机制了解的参考
+"""
+
 import numpy as np
 
 # 编程方法1：
@@ -88,7 +92,7 @@ print("Method 2: Matrix")
 predict2(data)
 
 # ------------------------------------------- #
-# method3: bias as an element of weight
+# method3: bias as an element of weight matrix
 w_ih = [[-2,-2],[3,-3],[-3,3]]
 w_ih = np.array(w_ih)
 w_ho = [-1,2,2]
