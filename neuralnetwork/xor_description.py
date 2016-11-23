@@ -1,5 +1,6 @@
 """
 本段代码使用了多种方法，来运算描述异或问题，可作为初学NN时对神经元工作机制了解的参考
+作者：叶强 qqiangye@gmail.com
 """
 
 import numpy as np
