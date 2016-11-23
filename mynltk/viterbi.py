@@ -5,25 +5,17 @@ https://zh.wikipedia.org/wiki/%E7%BB%B4%E7%89%B9%E6%AF%94%E7%AE%97%E6%B3%95
 test函数提供您多次输入observation给出status的示例
 修改者：叶强 qqiangye@gmail.com
 '''
+import numpy as np
 
-# 状态的样本空间
-states = ('Healthy', 'Fever')
-
-
-# 观测的样本空间
-observations = ('normal', 'cold', 'dizzy')
-
-
-# 起始个状态概率
-start_probability = {'Healthy': 0.6, 'Fever': 0.4}
-
+states = ('Healthy', 'Fever') # 状态的样本空间
+observations = ('normal', 'cold', 'dizzy')  # 观测的样本空间
+start_probability = {'Healthy': 0.6, 'Fever': 0.4}  # 起始个状态概率
 
 # 状态转移概率
-transition_probability = {
+transition_probability = {    
   'Healthy': {'Healthy': 0.7, 'Fever': 0.3},
   'Fever': {'Healthy': 0.4, 'Fever': 0.6},
 }
-
 
 # 状态->观测的发散概率
 emission_probability = {
@@ -31,8 +23,6 @@ emission_probability = {
   'Fever': {'normal': 0.1, 'cold': 0.3, 'dizzy': 0.6},
 }
 
-
-import numpy as np
 
 def display_result(observations,result_m):
   """
@@ -62,9 +52,10 @@ def display_result(observations,result_m):
     print(item)
   print(format("", "=^59s"))
 
-
 def viterbi(obs, states, start_p, trans_p, emit_p):
-
+  """
+  核心函数，不清楚的可以结合原作图解
+  """
   result_m = [] # 存放结果,其内每一个元素是一个字典
   pre_p = {}    # 存放前一次状态的概率
   for s in states:  # 对于每一个状态
@@ -83,6 +74,9 @@ def viterbi(obs, states, start_p, trans_p, emit_p):
 
 
 def example():
+  """
+  示例函数
+  """
   result = viterbi(observations,
                  states,
                  start_probability,
