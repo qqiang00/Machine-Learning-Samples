@@ -45,6 +45,14 @@ class CRFNode(BaseNode):
   def modify_matrix(self,pre_s,post_s):
     self.s_matrix[char_status[pre_s],char_status[post_s]] += 1
 
+  def factor_s(self,status:int):
+    c_sum = self.count if self.count > 0 else 0.0001
+    return self.s_list[status]/c_sum
+
+  def factor_s_to_s(self,s0:int,s1:int):
+    c_sum = self.count if self.count > 0 else 0.0001
+    return self.s_matrix[s0,s1]/c_sum
+
   #def __str__(self):
   #  s = str(self.content) + " (" + str(len(self.prepaths))+"," + str(len(self.postpaths)) + ")"
   #  return s
@@ -99,7 +107,13 @@ class CRFPath(BasePath):
 
   #def __str__(self):
   #  return super().__str__()
+  def factor_s_to_o(self,state):
+    c_sum = self.count if self.count > 0 else 0.0001
+    return np.sum(self.s_matrix[state,:])/c_sum
 
+  def factor_o_to_s(self,state):
+    c_sum = self.count if self.count > 0 else 0.0001
+    return np.sum(self.s_matrix[:,state]) / c_sum
 
   def show_detail(self):
     super().show_detail()
