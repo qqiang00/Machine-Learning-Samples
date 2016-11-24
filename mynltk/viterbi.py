@@ -5,23 +5,26 @@ https://zh.wikipedia.org/wiki/%E7%BB%B4%E7%89%B9%E6%AF%94%E7%AE%97%E6%B3%95
 test函数提供您多次输入observation给出status的示例
 修改者：叶强 qqiangye@gmail.com
 '''
-import numpy as np
-
-states = ('Healthy', 'Fever') # 状态的样本空间
-observations = ('normal', 'cold', 'dizzy')  # 观测的样本空间
-start_probability = {'Healthy': 0.6, 'Fever': 0.4}  # 起始个状态概率
-
+import math
+# 状态的样本空间
+states = ('Healthy', 'Fever')
+# 观测的样本空间
+observations = ('normal', 'cold', 'dizzy')
+# 起始个状态概率
+start_probability = {'Healthy': 0.6, 'Fever': 0.4}
 # 状态转移概率
-transition_probability = {    
+transition_probability = {
   'Healthy': {'Healthy': 0.7, 'Fever': 0.3},
   'Fever': {'Healthy': 0.4, 'Fever': 0.6},
 }
-
 # 状态->观测的发散概率
 emission_probability = {
   'Healthy': {'normal': 0.5, 'cold': 0.4, 'dizzy': 0.1},
   'Fever': {'normal': 0.1, 'cold': 0.3, 'dizzy': 0.6},
 }
+# 计算以E为底的幂
+def E(x):
+  return math.pow(math.e,x)
 
 
 def display_result(observations,result_m):
@@ -30,21 +33,25 @@ def display_result(observations,result_m):
   :param result_m:
   :return:
   """
+  # 从结果中找出最佳路径
+  infered_states = []
+  for t in range(len(result_m)-1,-1,-1):
+    infered_states.insert(0,max(zip(result_m[t].values(),result_m[t].keys()))[1])
+
   print(format("Viterbi Result","=^59s"))
   head = format("obs"," ^10s")
-  head += format("Infered status"," ^18s")
+  head += format("Infered state"," ^18s")
   for s in states:
     head += format(s," ^15s")
   print(head)
   print(format("", "-^59s"))
 
-  for obs,result in zip(observations,result_m):
+  for obs,result,infered_state in zip(observations,result_m,infered_states):
     item = format(obs," ^10s")
-    _, infered_status = max(zip(result.values(), result.keys()))
-    item += format(infered_status," ^18s")
+    item += format(infered_state," ^18s")
     for s in states:
-      item += format(result[s]," >12.8f")
-      if infered_status == s:
+      item += format(result[s][0]," >12.8f")
+      if infered_state == s:
         item += "(*)"
       else:
         item +="   "
@@ -52,39 +59,37 @@ def display_result(observations,result_m):
     print(item)
   print(format("", "=^59s"))
 
+
+
 def viterbi(obs, states, start_p, trans_p, emit_p):
-  """
-  核心函数，不清楚的可以结合原作图解
-  """
-  result_m = [] # 存放结果,其内每一个元素是一个字典
-  pre_p = {}    # 存放前一次状态的概率
+
+  result_m = [{}] # 存放结果,每一个元素是一个字典，每一个字典的形式是 state:(p,pre_state)
+                  # 其中state,p分别是当前状态下的概率值，pre_state表示该值由上一次的那个状态计算得到
   for s in states:  # 对于每一个状态
-    pre_p[s] = start_p[s]*emit_p[s][obs[0]] # 把第一个观测节点对应的各状态值计算出来
-  result_m.append(pre_p)
+    result_m[0][s] = (E(start_p[s]*emit_p[s][obs[0]]),None) # 把第一个观测节点对应的各状态值计算出来
 
-  for ob in obs[1:]:  # 从第2个观测节点开始
-    cur_p = {}  # 存放在当前观测下得到的各状态的概率
-    max_p,state_max_p = max(zip(pre_p.values(),pre_p.keys())) #查找前一次计算结果中最大概率及其状态
-    for s in states: # 对于每一个状态,计算由前一时刻最大p及对应状态转移至各状态，并由各状态表现为观测结果的概率
-      cur_p[s] = max_p * trans_p[state_max_p][s] * emit_p[s][ob] 
-    result_m.append(cur_p)  # 将当前的各状态P值存入结果列表
-    pre_p = cur_p # 将当前状态赋值给先前状态，准备下次计算
+  for t in range(1,len(obs)):
+    result_m.append({})  # 准备t时刻的结果存放字典，形式同上
 
-  return result_m
+    for s in states: # 对于每一个t时刻状态s,获取t-1时刻每个状态s0的p,结合由s0转化为s的转移概率和s状态至obs的发散概率
+                     # 计算t时刻s状态的最大概率，并记录该概率的来源状态s0
+                     # max()内部比较的是一个tuple:(p,s0),max比较tuple内的第一个元素值
+      result_m[t][s] = max([(E(result_m[t-1][s0][0]*trans_p[s0][s]*emit_p[s][obs[t]]),s0) for s0 in states])
+  return result_m    # 所有结果（包括最佳路径）都在这里，但直观的最佳路径还需要依此结果单独生成，在显示的时候生成
 
 
 def example():
   """
-  示例函数
+  一个可以交互的示例
   """
-  result = viterbi(observations,
+  result_m = viterbi(observations,
                  states,
                  start_probability,
                  transition_probability,
                  emission_probability)
-  display_result(observations,result)
+  display_result(observations,result_m)
   while True:
-    user_obs = input("Now give me your observation, I will infer the status\n"
+    user_obs = input("Now give me your observation, I will infer the state\n"
                 "Using 'N' for normal, 'C' for cold and 'D' for dizzy\n"
                 "Input here('q' to exit):")
 
@@ -101,12 +106,12 @@ def example():
           obs.append("dizzy")
         else:
           pass
-      result = viterbi(obs,
+      result_m = viterbi(obs,
                        states,
                        start_probability,
                        transition_probability,
                        emission_probability)
-      display_result(obs,result)
+      display_result(obs,result_m)
 
 
 
