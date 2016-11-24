@@ -36,9 +36,14 @@ def display_result(observations,result_m):
   """
   # 从结果中找出最佳路径
   infered_states = []
-  for t in range(len(result_m)-1,-1,-1):
-    infered_states.insert(0,max(zip(result_m[t].values(),result_m[t].keys()))[1])
-
+  final = len(result_m)-1
+  (p,pre_state),final_state = max(zip(result_m[final].values(), result_m[final].keys()))
+  infered_states.insert(0, final_state)
+  infered_states.insert(0, pre_state)
+  for t in range(final-1,0,-1):
+    _, pre_state = result_m[t][pre_state]
+    infered_states.insert(0,pre_state)
+    
   print(format("Viterbi Result","=^59s"))
   head = format("obs"," ^10s")
   head += format("Infered state"," ^18s")
@@ -67,7 +72,7 @@ def viterbi(obs, states, start_p, trans_p, emit_p):
   result_m = [{}] # 存放结果,每一个元素是一个字典，每一个字典的形式是 state:(p,pre_state)
                   # 其中state,p分别是当前状态下的概率值，pre_state表示该值由上一次的那个状态计算得到
   for s in states:  # 对于每一个状态
-    result_m[0][s] = (E(start_p[s]*emit_p[s][obs[0]]),None) # 把第一个观测节点对应的各状态值计算出来
+    result_m[0][s] = (start_p[s]*emit_p[s][obs[0]],None) # 把第一个观测节点对应的各状态值计算出来
 
   for t in range(1,len(obs)):
     result_m.append({})  # 准备t时刻的结果存放字典，形式同上
@@ -75,7 +80,7 @@ def viterbi(obs, states, start_p, trans_p, emit_p):
     for s in states: # 对于每一个t时刻状态s,获取t-1时刻每个状态s0的p,结合由s0转化为s的转移概率和s状态至obs的发散概率
                      # 计算t时刻s状态的最大概率，并记录该概率的来源状态s0
                      # max()内部比较的是一个tuple:(p,s0),max比较tuple内的第一个元素值
-      result_m[t][s] = max([(E(result_m[t-1][s0][0]*trans_p[s0][s]*emit_p[s][obs[t]]),s0) for s0 in states])
+      result_m[t][s] = max([(result_m[t-1][s0][0]*trans_p[s0][s]*emit_p[s][obs[t]],s0) for s0 in states])
   return result_m    # 所有结果（包括最佳路径）都在这里，但直观的最佳路径还需要依此结果单独生成，在显示的时候生成
 
 
@@ -99,11 +104,11 @@ def example():
     else:
       obs = []
       for o in user_obs:
-        if o == 'N' or o == 'n':
+        if o.upper() == 'N':
           obs.append("normal")
-        elif o == 'C' or o == 'c':
+        elif o.upper() == 'C':
           obs.append("cold")
-        elif o == 'D' or o == 'd':
+        elif o.upper() == 'D':
           obs.append("dizzy")
         else:
           pass
