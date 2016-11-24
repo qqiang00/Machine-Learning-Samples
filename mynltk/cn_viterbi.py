@@ -37,7 +37,8 @@ emission_probability = {
 }
 # 计算以E为底的幂
 def E(x):
-  return math.pow(math.e,x)
+  #return math.pow(math.e,x)
+  return x
 
 
 def display_result(observations,result_m):
@@ -48,14 +49,18 @@ def display_result(observations,result_m):
   """
   # 从结果中找出最佳路径
   infered_states = []
-  for t in range(len(result_m)-1,-1,-1):
-    infered_states.insert(0,max(zip(result_m[t].values(),result_m[t].keys()))[1])
-
-  print(format("维特比算法结果","=^59s"))
-  head = format("观测"," ^10s")
-  head += format("推断健康状态"," ^18s")
+  final = len(result_m) - 1
+  (p, pre_state), final_state = max(zip(result_m[final].values(), result_m[final].keys()))
+  infered_states.insert(0, final_state)
+  infered_states.insert(0, pre_state)
+  for t in range(final - 1, 0, -1):
+    _, pre_state = result_m[t][pre_state]
+    infered_states.insert(0, pre_state)
+  print(format("Viterbi Result", "=^59s"))
+  head = format("obs", " ^10s")
+  head += format("Infered state", " ^18s")
   for s in states:
-    head += format(s," ^12s")
+    head += format(s, " ^15s")
   print(head)
   print(format("", "-^59s"))
 
@@ -104,7 +109,7 @@ def example():
   while True:
     user_obs = input("轮到你来输入观测,计算机来推断可能状态\n"
                 "使用 'N' 代表'正常', 'C' 代表'发冷','D'代表'发晕'\n"
-                "您输入：('q'将退出):")
+                "您输入('q'将退出):")
 
     if len(user_obs) ==0 or 'q' in user_obs or 'Q' in user_obs:
       break
