@@ -111,11 +111,11 @@ def example():
     else:
       obs = []
       for o in user_obs:
-        if o == 'N' or o == 'n':
+        if o.upper() == 'N':
           obs.append("正常")
-        elif o == 'C' or o == 'c':
+        elif o.upper() == 'C':
           obs.append("发冷")
-        elif o == 'D' or o == 'd':
+        elif o.upper() == 'D':
           obs.append("发晕")
         else:
           pass
