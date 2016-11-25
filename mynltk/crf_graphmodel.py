@@ -7,16 +7,49 @@
 # 便于后续进一步分析
 import numpy as np
 from graphmodel import BaseNode, BasePath, create_path_key
+import strtool
+
+try:
+  from xml.etree.cElementTree import Element, SubElement, ElementTree
+except ImportError:
+  from xml.etree.ElementTree import Element, SubElement, ElementTree
+
+state2index = {"B":0,"M":1,"E":2,"S":3} #记录个状态在list内的索引
+index2state = {"0":"B","1":"M","2":"E","3":"S"} #记录索引对应的状态字符串
 
 
-char_status={"B":0,"M":1,"E":2,"S":3} #记录个状态在list内的索引
-char_status2={"0":"B","1":"M","2":"E","3":"S"} #记录索引对应的状态字符串
+
+def node2ele(cur_n, nodeEle):
+  nodeEle.set("key", cur_n.text)
+  nodeEle.set("count", str(cur_n.count))
+  nodeEle.set("s_list", strtool.list2string(cur_n.s_list))
+  nodeEle.set("s_matrix", strtool.matrix2string(cur_n.s_matrix))
+
+
+
+def ele2node(nodeEle, cur_n):
+  cur_n.text = nodeEle.get("key")
+  cur_n.count = int(nodeEle.get("count"))
+  cur_n.s_list = strtool.string2list(nodeEle.get("s_list"))
+  cur_n.s_matrix = strtool.string2matrix(nodeEle.get("s_matrix"))
+
+def path2ele(cur_p, pathEle,is_post_path = True):
+  pathEle.set("count", str(cur_p.count))
+  if is_post_path is True:
+    pathEle.set("post_node", cur_p.post_n.text)
+  else:
+    pathEle.set("pre_node", cur_p.pre_n.text)
+  pathEle.set("s_matrix", strtool.matrix2string(cur_p.s_matrix))
+
+def ele2path(pathEle, cur_p):
+  cur_p.count = int(pathEle.attrib["count"])
+  cur_p.s_matrix = strtool.string2matrix(pathEle.attrib["s_matrix"])
 
 def show_status_matrix(matrix):
   print("\tTransfer Matrix:")
   print("\tPre\Post\t\tB\t\t\tM\t\t\tE\t\t\tS")
   for i in range(4):
-    s = "\t   " + char_status2[str(i)]
+    s = "\t   " + index2state[str(i)]
     for j in range(4):
       s += "\t{:>10s}".format(str(matrix[i, j]))
     print(s)
@@ -35,7 +68,7 @@ class CRFNode(BaseNode):
     :param status: 是字在词语里的位置信息
     :return:
     '''
-    index = char_status[status]
+    index = state2index[status]
     # if index is None:
     #   warnings.warn("wrong status for a character in a phrase",RuntimeWarning)
     self.s_list[index] += 1
@@ -43,7 +76,7 @@ class CRFNode(BaseNode):
     super().touch()
 
   def modify_matrix(self,pre_s,post_s):
-    self.s_matrix[char_status[pre_s],char_status[post_s]] += 1
+    self.s_matrix[state2index[pre_s],state2index[post_s]] += 1
 
   def factor_s(self,status:int):
     c_sum = self.count if self.count > 0 else 0.0001
@@ -77,9 +110,6 @@ class CRFNode(BaseNode):
           % (self.count, self.s_list[0], self.s_list[1],
              self.s_list[2], self.s_list[3]))
 
-
-
-
   # 打印节点内容
   def show_detail(self):
     #pre_nchars=""
@@ -101,7 +131,7 @@ class CRFPath(BasePath):
 
   def touch_as(self, pre_s, post_s):
     super().touch()
-    self.s_matrix[char_status[pre_s],char_status[post_s]] += 1
+    self.s_matrix[state2index[pre_s],state2index[post_s]] += 1
     #self.touch()  # self.touch与super().touch()的效果一样，将节点访问次数+1
 
 

@@ -100,7 +100,7 @@ class CnCharDict:
       return
 
     for file_or_dir in fd_list:
-      fd_path = os.path.join(dir, file_or_dir)
+      fd_path = os.path.join(dir_name, file_or_dir)
       if os.path.isdir(fd_path): # 如果是一个目录，递归调用自身
         self.learnFromDirectory(fd_path)
       else: # 如果是一个文件
